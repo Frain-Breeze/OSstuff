@@ -97,13 +97,25 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 
 void terminal_putchar(char c)
 {
-    terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+    if(c != '\n'){
+        terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+    }else{
+        terminal_column = VGA_WIDTH-1; //this will trigger the "line overflow"
+    }
+    
+    //line overflow
     if(++terminal_column == VGA_WIDTH){
         terminal_column = 0;
         if(++terminal_row == VGA_HEIGHT){
-            terminal_row = 0;
+            terminal_row--;
+            for(size_t y = 0; y < VGA_HEIGHT; y++){
+                for(size_t x = 0; x < VGA_WIDTH; x++){
+                    terminal_buffer[y*VGA_WIDTH + x] = terminal_buffer[(y+1)*VGA_WIDTH + x];
+                }
+            }
         }
     }
+    
 }
 
 void terminal_write(const char* data, size_t size) 
@@ -121,5 +133,9 @@ void terminal_writestring(const char* data)
 void kernel_main(void)
 {
     terminal_init();
-    terminal_writestring("Lolis are a great example for this. Small, but good");
+    terminal_writestring("Lolis are a great example for this.\nSmall, but good\n");
+    //terminal_buffer[1] = vga_entry('1', terminal_color);
+    //terminal_buffer[1+VGA_WIDTH] = vga_entry('2', terminal_color);
+    terminal_writestring("1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n");
+    terminal_writestring("lolis, nl:\nnext line");
 }
